@@ -24,7 +24,6 @@ var io = socket(server);
 io.on('connection', function (socket) {
     // Socket on-load listener
     socket.on('loaded', function () {
-        console.log('has loaded');
         io.sockets.emit('json_send', bins_json);
     });
 
@@ -36,7 +35,6 @@ io.on('connection', function (socket) {
     //Listener for compress
     socket.on('compress', function (data) {
         bins_json = JSON.parse(fs.readFileSync('bins.json').toString());
-        console.log(data);
         if (data == 'bin1') {
             bins_json[data].start_compress = 1;
         } else {

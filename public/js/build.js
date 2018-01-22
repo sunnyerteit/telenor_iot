@@ -17,7 +17,10 @@ function initial_json() {
 
 let temp_data;
 
+let socket_switch = 0;
+
 socket.on('json_send', function (data) {
+    if (socket_switch == 0) {
     temp_data = data;
     let div_items = document.getElementById("items");
 
@@ -158,6 +161,8 @@ socket.on('json_send', function (data) {
         strokeWeight: 2
     });
 
+    socket_switch = 1;
+};
 
 });
 
