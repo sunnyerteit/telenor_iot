@@ -1,0 +1,519 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Map button
+            $("#overlay_div_1").click(function () {
+                if ($("#overlay_img_1").attr("data") == "images/icon_map_highlight.svg") {
+                    $("#map").slideUp();
+                    $("#overlay_img_1").attr("data", "images/icon_map.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat_highlight.svg");
+                } else if ($("#overlay_img_2").attr("data") == "images/icon_route_highlight.svg") {
+                    $("#overlay_img_1").attr("data", "images/icon_map_highlight.svg");
+                    $("#overlay_img_2").attr("data", "images/icon_route.svg");
+
+                    route_path.setMap(null);
+                } else {
+                    $("#map").slideDown();
+                    $("#overlay_img_1").attr("data", "images/icon_map_highlight.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat.svg");
+                };
+            });
+
+            // Route button
+            $("#overlay_div_2").click(function () {
+                if ($("#overlay_img_2").attr("data") == "images/icon_route_highlight.svg") {
+                    $("#overlay_img_1").attr("data", "images/icon_map_highlight.svg");
+                    $("#overlay_img_2").attr("data", "images/icon_route.svg");
+                    route_path.setMap(null);
+                } else if ($("#overlay_img_1").attr("data") == "images/icon_map_highlight.svg") {
+                    $("#overlay_img_1").attr("data", "images/icon_map.svg");
+                    $("#overlay_img_2").attr("data", "images/icon_route_highlight.svg");
+
+                    route_path.setMap(map);
+                } else {
+                    $("#map").slideDown();
+                    $("#overlay_img_2").attr("data", "images/icon_route_highlight.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat.svg");
+
+                    route_path.setMap(map);
+                };
+            });
+
+            // Stat button
+            $("#overlay_div_3").click(function () {
+                if ($("#overlay_img_3").attr("data") == "images/icon_stat_highlight.svg") {
+                    $("#map").slideDown();
+                    $("#overlay_img_1").attr("data", "images/icon_map_highlight.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat.svg");
+                } else if ($("#overlay_img_1").attr("data") == "images/icon_map_highlight.svg") {
+                    $("#map").slideUp();
+                    $("#overlay_img_1").attr("data", "images/icon_map.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat_highlight.svg");
+                } else {
+                    $("#map").slideUp();
+                    $("#overlay_img_2").attr("data", "images/icon_route.svg");
+                    $("#overlay_img_3").attr("data", "images/icon_stat_highlight.svg");
+
+                    route_path.setMap(null);
+                };
+            });
+        });
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwsEHbdHRNAaz5u2IoMuz_ehHtc8z8WJI&callback=initMap">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
+    <!-- socket -->
+    <script type='text/javascript' src='js/build.js'></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        #main {
+            height: 100%;
+            width: 100%;
+            background-color: greenyellow;
+            box-sizing: border-box;
+        }
+
+        #main_child {
+            overflow: hidden
+        }
+
+        #left {
+            height: 100%;
+            float: left;
+            width: calc(100% - 613px);
+            z-index: 0
+        }
+
+        #right {
+            height: 100%;
+            width: 613px;
+            float: right;
+            background-color: #2F304D;
+            z-index: 5;
+            box-shadow: -4px 0px 10px 1px rgba(0, 0, 0, 0.50);
+            right: 0;
+            position: absolute;
+        }
+
+        #map_overlay {
+            background-color: rgba(28, 29, 47, 0.6);
+            width: calc(100% - 613px);
+            height: 49px;
+            position: absolute;
+            z-index: 1;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        #map_overlay>div {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+            color: white;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .map_overlay_item:first-child {
+            padding-left: 20px;
+            float: left;
+            font-size: 14px;
+            width: 138px
+        }
+
+        .map_overlay_item:nth-child(2) {
+            float: left;
+            font-size: 12px
+        }
+
+        .map_overlay_item:nth-child(3) {
+            float: right;
+            right: 0;
+            padding-right: 32px;
+            font-size: 12px
+        }
+
+        #map {
+            box-sizing: border-box;
+            float: top;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 0;
+            background-color: antiquewhite
+        }
+
+        #stat {
+            box-sizing: border-box;
+            float: top;
+            height: 100%;
+            width: 100%;
+            z-index: -1;
+            background-color: brown;
+        }
+
+        #overlay {
+            height: 340px;
+            width: 103px;
+            top: 9.8%;
+            left: 0;
+            background-color: #1C1D2F;
+            position: absolute;
+            z-index: 3;
+            box-shadow: 1px 0px 10px 1px rgba(0, 0, 0, 0.50)
+        }
+
+        #overlay>div {
+            height: calc(100%/3 - 11px);
+            text-align: center;
+            color: #8183A5;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+        }
+
+        #overlay>div:hover {
+            background-color: rgb(166, 255, 248);
+            cursor: default
+        }
+
+
+        #overlay>hr {
+            width: 65px;
+            border: 0.5px solid #4F4D73
+        }
+
+        #overlay>div>object {
+            padding-top: calc(50% - 40px);
+            padding-left: calc(50%-1px);
+            height: 50px;
+        }
+
+
+
+        .search_bar:first-child {
+            float: left;
+            padding-left: 33px;
+            height: 100%;
+            width: 30px;
+            padding-top: 15px;
+            box-sizing: border-box;
+        }
+
+        #search_img {
+            height: 22px;
+
+        }
+
+        .search_bar:nth-child(2) {
+            padding-top: 16px;
+            padding-left: 70px;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            color: #53546B;
+        }
+
+        #search_bar {
+            height: 49px
+        }
+
+        #items {
+            height: calc(100% - 49px);
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .item {
+            background-color: #282948;
+            height: 100px;
+            width: 613px;
+            margin-bottom: 3px;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
+        .item:hover {
+            background-color: rgb(166, 255, 248) !important;
+        }
+
+        .item_div:first-child {
+            margin-left: 22px;
+            padding-top: 26px;
+            float: left;
+            height: 100%;
+            width: 50px;
+            left: 0;
+            box-sizing: border-box;
+        }
+
+        .item_div:nth-child(2) {
+            float: left;
+            height: 100%;
+            width: 177px;
+            padding-left: 22px;
+            color: #8183A5;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            line-height: 40%
+        }
+
+        .item_div_2_p {
+            padding-top: 10px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .item_div:nth-child(3) {
+            float: left;
+            height: 100%;
+            width: 53.5px;
+            padding-top: 12px;
+            box-sizing: border-box;
+
+        }
+
+        .item_div_3_p {
+            vertical-align: text-top;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            color: #8183A5;
+            font-size: 12px;
+            line-height: 0%
+        }
+
+        .item_div:nth-child(4) {
+            float: left;
+            border-left: 1px solid #8183A5;
+            height: 44px;
+            margin-top: 28px;
+            margin-bottom: 28px;
+            box-sizing: border-box;
+        }
+
+        .item_div:nth-child(5) {
+            float: left;
+            width: 75.5px;
+            height: 100%;
+            padding-left: 19px;
+            color: #8183A5;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        .item_div_5_p {
+            margin-top: 4px;
+        }
+
+        .item_div:nth-child(6) {
+            padding-left: 20px;
+            float: left;
+            border-left: 1px solid #8183A5;
+            height: 44px;
+            margin-top: 28px;
+            margin-bottom: 28px;
+            box-sizing: border-box;
+            width: 180px;
+        }
+
+        .item_div_6_div {
+            box-shadow: 0px 3px 10px 1px rgba(0, 0, 0, 0.30);
+            height: 34px;
+            width: 150px;
+            background-color: #2E2A4D;
+        }
+
+        .item_div_6_div:hover {
+            background-color: rgb(166, 255, 248) !important;
+        }
+
+        .item_div_6_div_div:first-child {
+            margin-top: 6px;
+            float: left
+        }
+
+        .item_div_6_div_div:nth-child(2) {
+            margin-top: 6px;
+            float: left
+        }
+
+        .item_div_6_p_1 {
+            padding-left: 10px;
+            display: inline;
+            vertical-align: center;
+            color: #8183A5;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .item_div_6_p_2 {
+            margin-top: 5px;
+            padding-left: 20px;
+            vertical-align: center;
+            color: #8183A5;
+            font-family: 'Roboto', sans-serif;
+            font-size: 13px;
+            font-style: italic
+        }
+
+        .item_img1 {
+            height: 50px
+        }
+
+        .item_img2 {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            height: 37px
+        }
+
+        .item_img3 {
+            margin-top: 20px;
+            height: 26px
+        }
+
+        .item_img4 {
+            padding-left: 10px;
+            margin-top: 0px;
+            height: 20px
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="main">
+        <div id="main_child">
+            <div id="left">
+                <div id="map_overlay">
+                    <div class="map_overlay_item">
+                        Fornebu
+                    </div>
+                    <div class="map_overlay_item" id="map_overlay_date">
+                    </div>
+                    <div class="map_overlay_item" id="map_overlay_clock">
+                        -
+                    </div>
+                    <script>
+                        // Updates div at an interval of 1s
+                        setInterval(function () {
+                            var clock = new Date;
+                            // Add four digit clock
+                            $("#map_overlay_clock").text(('0' + clock.getHours()).slice(-2) + ':' + ('0' + clock.getMinutes()).slice(-2));
+                        }, 1000);
+                    </script>
+                    <script>
+                        const div_date = new Date();
+                        document.getElementById("map_overlay_date").innerHTML = div_date.getDate() + '.' + ("0" + (div_date.getMonth() + 1)).slice(-2) + '.' + div_date.getFullYear();
+                    </script>
+                </div>
+                <div id="map">
+                </div>
+                <script src="js/initMap.js"></script>
+                <div id="stat">
+                    <img src="images/Røros_statistik_screen_reduced_01.png">
+                    </div>
+            </div>
+            <div id="right">
+                <div id="search_bar">
+                    <div class="search_bar">
+                        <object id="search_img" data="images/icon_search.svg" type="image/svg+xml"></object>
+                    </div>
+                    <div class="search_bar">
+                        finn søppelbøtte
+                    </div>
+
+                </div>
+                <div id="items">
+                    <!--
+                    <div class="item">
+                        <div class="item_div">
+                            <object class="item_img1" data="images/icon_bin_red.svg" type="image/svg+xml">
+                            </object>
+                        </div>
+                        <div class="item_div">
+                            <p class="item_div_2_p">44323.322</p>
+                            <p>Fornebu Nord</p>
+                            <p>42 sykler</p>
+
+                        </div>
+                        <div class="item_div">
+                            <object class="item_img2" data="images/icon_rest.svg" type="image/svg+xml"></object>
+                            <p class="item_div_3_p">REST</p>
+                        </div>
+                        <div class="item_div">
+                        </div>
+                        <div class="item_div">
+                            <object class="item_img3" data="images/icon_battery_green.svg" type="image/svg+xml"></object>
+                            <p class="item_div_5_p">100%</p>
+                        </div>
+                        <div class="item_div">
+                            <div class="item_div_6_div">
+                                <div class="item_div_6_div_div">
+
+                                    <object class="item_img4" data="images/icon_compress.svg" type="image/svg+xml"></object>
+                                </div>
+                                <div class="item_div_6_div_div">
+                                    <p class="item_div_6_p_1">KOMPRIMER</p>
+
+                                </div>
+                            </div>
+                            <p class="item_div_6_p_2">forrige: 21:15</p>
+                        </div>
+                    </div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                </div>
+                -->
+                </div>
+
+            </div>
+            <div id="overlay">
+                <div id="overlay_div_1">
+                    <object id="overlay_img_1" data="images/icon_map_highlight.svg" type="image/svg+xml">
+                    </object>
+                    <br>KART
+                </div>
+                <hr>
+                <div id="overlay_div_2">
+                    <object id="overlay_img_2" data="images/icon_route.svg" type="image/svg+xml">
+                    </object>
+                    <br>RUTE
+                </div>
+                <hr>
+                <div id="overlay_div_3">
+                    <object id="overlay_img_3" data="images/icon_stat.svg" type="image/svg+xml">
+                    </object>
+                    <br>STATISTIKK
+                </div>
+            </div>
+
+        </div>
+</body>
+
+</html>
